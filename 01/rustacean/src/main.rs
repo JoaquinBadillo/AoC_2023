@@ -48,9 +48,8 @@ fn main() {
                             found = true;
                             num = *value;
 
-                            let last = parsed.chars().last().unwrap();
                             parsed.clear();
-                            parsed.push(last);
+                            parsed.push(c);
 
                             break;
                         },
@@ -58,6 +57,7 @@ fn main() {
                     }
                 }
             } else {
+                parsed.clear();
                 found = true;
                 num = data.unwrap();
             }

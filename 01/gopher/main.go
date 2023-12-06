@@ -94,22 +94,20 @@ func main() {
 
 		var sb strings.Builder
 
-		for _, char := range line {
-			num, err := strconv.Atoi(string(char))
+		for _, chr := range line {
+			num, err := strconv.Atoi(string(chr))
 
 			if err != nil {
-				sb.WriteRune(char)
+				sb.WriteRune(chr)
 				match := false
 				for key, value := range numbers {
-					found, start := kmp(sb.String(), key)
+					found, _ := kmp(sb.String(), key)
 
 					if found {
 						num = value
 						match = true
-
-						prev := sb.String()
 						sb.Reset()
-						sb.WriteString(prev[start-1:])
+						sb.WriteRune(chr)
 						break
 					}
 				}
