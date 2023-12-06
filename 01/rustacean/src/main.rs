@@ -14,31 +14,28 @@ fn main() {
 
     let file = fs::File::open(file_path)
         .expect("File not found");
-
-    let mut total = 0;
-
-    for line in std::io::BufReader::new(file).lines() {
-        let mut vals = (0, 0);
+    
+    let total = std::io::BufReader::new(file).lines().fold(0, |total, line| {
         let mut first = true;
-
         let line = line.expect("Error reading line");
 
-        for c in line.chars() {
-            let num = match c.to_digit(10) {
-                Some(n) => n,
-                None => continue,
-            };
+        let vals = line.chars().fold((0,0), |mut digits, c| {
+            match c.to_digit(10) {
+                Some(num) => {
+                    if first {
+                        first = false;
+                        digits.0 = num;
+                    }
 
-            if first {
-                vals.0 = num;
-                first = false
+                    digits.1 = num;
+                    digits
+                },
+                None => digits
             }
-
-            vals.1 = num;
-        }
+        });
         
-        total += vals.0 * 10 + vals.1;
-    }
+        total + vals.0 * 10 + vals.1
+    });
 
     println!("{}", total);
 }
