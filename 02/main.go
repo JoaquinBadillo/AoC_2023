@@ -20,6 +20,8 @@ func splitPair(str string, sep string) (string, string, error) {
 	return vals[0], vals[1], nil
 }
 
+// Part 1
+
 func validSet(cubeSet string, conditions map[string]int) bool {
 	for _, cubes := range strings.Split(cubeSet, ",") {
 		cubes = strings.TrimLeft(cubes, " ")
@@ -123,6 +125,80 @@ func addValidGames(filename string) int {
 	return sum
 }
 
+// Part 2
+
+func cubePow(cubeSets []string) (int, error) {
+	minCubes := make(map[string]int)
+	for _, cubeSet := range cubeSets {
+		for _, cubes := range strings.Split(cubeSet, ",") {
+			cubes = strings.TrimLeft(cubes, " ")
+			qStr, color, err := splitPair(cubes, " ")
+
+			if err != nil {
+				return -1, errors.New("failed to split quantity and color pair")
+			}
+
+			color = strings.Trim(color, " ")
+			quantity, err := strconv.Atoi(qStr)
+
+			if err != nil {
+				log.Printf("Failed to cast [%s] to a number", qStr)
+				return -1, errors.New("failed to cast quantity to int")
+			}
+
+			val, ok := minCubes[color]
+
+			if !ok {
+				minCubes[color] = quantity
+			} else {
+				minCubes[color] = max(val, quantity)
+			}
+		}
+	}
+
+	product := 1
+
+	for _, value := range minCubes {
+		product *= value
+	}
+
+	return product, nil
+}
+
+func sumOfCubePows(filename string) int {
+	file, err := os.Open(filename)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	sum := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		_, data, err := splitPair(line, ":")
+
+		if err != nil {
+			log.Fatal("Invalid input")
+		}
+
+		cubeSets := strings.Split(data, ";")
+
+		pow, err := cubePow(cubeSets)
+
+		if err != nil {
+			log.Fatal("Invalid input")
+		}
+
+		sum += pow
+	}
+
+	return sum
+}
+
 func main() {
 	var filename string
 
@@ -132,5 +208,5 @@ func main() {
 		filename = "input.txt"
 	}
 
-	fmt.Println(addValidGames(filename))
+	fmt.Println(sumOfCubePows(filename))
 }
