@@ -63,15 +63,7 @@ func validGame(cubeSets []string, conditions map[string]int) bool {
 	return true
 }
 
-func main() {
-	var filename string
-
-	if len(os.Args) > 1 {
-		filename = os.Args[1]
-	} else {
-		filename = "input.txt"
-	}
-
+func addValidGames(filename string) int {
 	file, err := os.Open(filename)
 
 	if err != nil {
@@ -128,5 +120,17 @@ func main() {
 		}
 	}
 
-	fmt.Println(sum)
+	return sum
+}
+
+func main() {
+	var filename string
+
+	if len(os.Args) > 1 {
+		filename = os.Args[1]
+	} else {
+		filename = "input.txt"
+	}
+
+	fmt.Println(addValidGames(filename))
 }
