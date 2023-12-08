@@ -65,13 +65,12 @@ func validGame(cubeSets []string, conditions map[string]int) bool {
 	return true
 }
 
-func addValidGames(filename string) int {
+func parseConditions(filename string) (map[string]int, error) {
 	file, err := os.Open(filename)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil
 	}
-
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
@@ -79,11 +78,6 @@ func addValidGames(filename string) int {
 	conditions := make(map[string]int)
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		if strings.TrimRight(line, "\n") == "#" {
-			break
-		}
-
 		color, qStr, err := splitPair(line, ",")
 
 		if err != nil {
@@ -94,11 +88,23 @@ func addValidGames(filename string) int {
 
 		if err != nil {
 			log.Fatal("Invalid input file")
-
 		}
 
 		conditions[color] = val
 	}
+
+	return conditions, nil
+}
+
+func addValidGames(filename string, conditions map[string]int) int {
+	file, err := os.Open(filename)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
 
 	sum := 0
 	for scanner.Scan() {
@@ -208,5 +214,15 @@ func main() {
 		filename = "input.txt"
 	}
 
-	fmt.Println(sumOfCubePows(filename))
+	// Part 1
+	conditions, err := parseConditions("conditions.txt")
+	if err != nil {
+		log.Fatal("Failed to parse conditions")
+	}
+
+	fmt.Printf("Part 1: %d\n", addValidGames(filename, conditions))
+
+	// Part 2
+
+	fmt.Printf("Part 2: %d\n", sumOfCubePows(filename))
 }
