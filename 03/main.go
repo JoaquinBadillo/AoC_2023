@@ -21,6 +21,10 @@ type Num struct {
 	isPart bool
 }
 
+type Asterisk struct {
+	adjacentNums []*Num
+}
+
 func main() {
 	file, err := os.Open("input.txt")
 
@@ -33,6 +37,8 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	symbols := make(map[Position]struct{})
+	asterisks := make(map[Position]*Asterisk)
+
 	nums := make([]*Num, 0)
 	row := 0
 	sum := 0
@@ -60,7 +66,11 @@ func main() {
 				}
 
 				if line[i] != '.' {
-					symbols[Position{row, i}] = struct{}{}
+					if line[i] == '*' {
+						asterisks[Position{row, i}] = &Asterisk{make([]*Num, 0)}
+					} else {
+						symbols[Position{row, i}] = struct{}{}
+					}
 				}
 			}
 		}
@@ -103,6 +113,11 @@ func main() {
 					sum += num.value
 					num.isPart = true
 					break
+				} else if asterisk, ok := asterisks[neihbour]; ok {
+					asterisk.adjacentNums = append(asterisk.adjacentNums, num)
+					sum += num.value
+					num.isPart = true
+					break
 				}
 			}
 
@@ -112,5 +127,14 @@ func main() {
 		}
 	}
 
-	fmt.Println(sum)
+	fmt.Printf("Part 1: %d\n", sum)
+
+	gearRatios := 0
+	for _, asterisk := range asterisks {
+		if len(asterisk.adjacentNums) == 2 {
+			gearRatios += asterisk.adjacentNums[0].value * asterisk.adjacentNums[1].value
+		}
+	}
+
+	fmt.Printf("Part 2: %d\n", gearRatios)
 }
