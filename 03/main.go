@@ -22,7 +22,7 @@ type Num struct {
 }
 
 type Asterisk struct {
-	adjacentNums []*Num
+	adjacentNums map[*Num]struct{}
 }
 
 func main() {
@@ -67,7 +67,7 @@ func main() {
 
 				if line[i] != '.' {
 					if line[i] == '*' {
-						asterisks[Position{row, i}] = &Asterisk{make([]*Num, 0)}
+						asterisks[Position{row, i}] = &Asterisk{make(map[*Num]struct{}, 0)}
 					} else {
 						symbols[Position{row, i}] = struct{}{}
 					}
@@ -110,19 +110,21 @@ func main() {
 			for _, direction := range directions {
 				neihbour := Position{pos.x + direction.x, pos.y + direction.y}
 				if _, ok := symbols[neihbour]; ok {
-					sum += num.value
-					num.isPart = true
-					break
+					if !num.isPart {
+						num.isPart = true
+						sum += num.value
+					}
 				} else if asterisk, ok := asterisks[neihbour]; ok {
-					asterisk.adjacentNums = append(asterisk.adjacentNums, num)
-					sum += num.value
-					num.isPart = true
+					if _, ok := asterisk.adjacentNums[num]; !ok {
+						asterisk.adjacentNums[num] = struct{}{}
+					}
+
+					if !num.isPart {
+						num.isPart = true
+						sum += num.value
+					}
 					break
 				}
-			}
-
-			if num.isPart {
-				break
 			}
 		}
 	}
@@ -132,7 +134,11 @@ func main() {
 	gearRatios := 0
 	for _, asterisk := range asterisks {
 		if len(asterisk.adjacentNums) == 2 {
-			gearRatios += asterisk.adjacentNums[0].value * asterisk.adjacentNums[1].value
+			product := 1
+			for num := range asterisk.adjacentNums {
+				product *= num.value
+			}
+			gearRatios += product
 		}
 	}
 
