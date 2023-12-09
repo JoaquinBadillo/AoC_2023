@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -26,22 +24,38 @@ func main() {
 	}
 	defer file.Close()
 
-	reg := regexp.MustCompile(`^Card \d+:\s`)
-
 	scanner := bufio.NewScanner(file)
 	total := 0
+	cards := make(map[int]int, 0)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		line = reg.ReplaceAllString(line, "${1}")
+		line = strings.TrimLeft(line, "Card ")
 
-		left, right, err := split2(line, " | ")
+		card, rest, err := split2(line, ": ")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		cardNum, err := strconv.Atoi(card)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		total++
+		current := 1
+		multiplier := 1
+
+		if val, ok := cards[cardNum]; ok {
+			multiplier += val
+		}
+
+		left, right, err := split2(rest, " | ")
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		winning := make(map[int]struct{}, 0)
-		winningCards := 0
 
 		for _, numStr := range strings.Split(left, " ") {
 			if numStr == "" {
@@ -69,14 +83,14 @@ func main() {
 			}
 
 			if _, ok := winning[num]; ok {
-				winningCards++
+				if _, ok := cards[cardNum]; !ok {
+					cards[cardNum+current] = multiplier
+				} else {
+					cards[cardNum+current] += multiplier
+				}
+				current++
+				total += multiplier
 			}
-		}
-
-		prod := math.Pow(2, float64(winningCards)-1)
-
-		if winningCards >= 1 {
-			total += int(prod)
 		}
 	}
 
